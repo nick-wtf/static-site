@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "static-site.fullname" . }}
+  labels:
+    {{- include "static-site.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "static-site.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "static-site.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+            - name: static-content
+              mountPath: /usr/share/nginx/html
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: static-content
+        {{- if .Values.persistence.enabled }}
+          {{- if eq .Values.persistence.type "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ include "static-site.fullname" . }}-pvc
+          {{- else if eq .Values.persistence.type "hostPath" }}
+          hostPath:
+            path: {{ .Values.persistence.hostPath }}
+            type: Directory
+          {{- end }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

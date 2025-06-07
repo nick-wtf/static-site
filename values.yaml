@@ -1,0 +1,43 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths: ["/"]
+  tls: []
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+persistence:
+  enabled: true
+  # Choose between PVC and hostPath
+  type: pvc  # valid options: pvc, hostPath
+  
+  # PVC settings (used when type=pvc)
+  storageClass: ""
+  accessMode: ReadOnlyMany
+  size: 1Gi
+  
+  # hostPath settings (used when type=hostPath)
+  hostPath: ""  # Path on the host to use for storage
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
