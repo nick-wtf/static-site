@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: nick-wtf-runners
     steps:
       - name: Checkout
         uses: actions/checkout@v4
